@@ -29,7 +29,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.DeviceServiceServer(s, &server{})
+	pb.RegisterDeviceServiceServer(s, &server{})
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
