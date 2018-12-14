@@ -1,0 +1,28 @@
+syntax = "proto3";
+package proto;
+
+service DeviceService {
+    // Sends data devices
+    rpc GetData (DeviceStatus) returns (DeviceStatusResponse) {}
+  }
+
+message DeviceStatus {
+	string date = 1;
+	uint32 unixtime = 2;
+	uint32 satusgps = 3;
+	float latitude = 4; 
+	float longitude = 5; 
+	float GPShdop = 6;// Optional.
+	uint32 velocity = 7;
+	uint32 GPSsat = 8;// Optional.
+	uint32 fixQuality = 9; 
+	float temp = 10;
+	int32 lucky_number = 11;
+	string ms = 12;
+}
+
+// The response message containing the greetings
+message DeviceStatusResponse {
+	bool status = 1;
+	string time = 2;
+}

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	pb "service-nt/proto"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -18,13 +19,8 @@ const (
 type server struct{}
 
 // SayHello implements helloworld.GreeterServer
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
-}
-
-// SayHello implements helloworld.GreeterServer
-func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
+func (s *server) GetData(ctx context.Context, in *pb.DeviceStatus) (*pb.DeviceStatusResponse, error) {
+	return &pb.DeviceStatusResponse{Status: true, Time: time.Now().String()}, nil
 }
 
 func main() {
@@ -33,7 +29,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
+	pb.DeviceServiceServer(s, &server{})
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
