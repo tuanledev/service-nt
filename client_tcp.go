@@ -50,7 +50,6 @@ func main() {
 func readConnection(conn net.Conn) {
 	for {
 		scanner := bufio.NewScanner(conn)
-
 		for {
 			ok := scanner.Scan()
 			text := scanner.Text()

@@ -62,6 +62,11 @@ func handleConnection(conn net.Conn) {
 func handleMessage(message string, conn net.Conn) {
 	fmt.Println("> " + message)
 
+	_, err := conn.Write([]byte(message))
+	if err != nil {
+		fmt.Println("err ", err)
+	}
+
 	if len(message) > 0 && message[0] == '/' {
 		switch {
 		case message == "/time":
