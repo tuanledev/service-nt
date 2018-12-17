@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	pb "service-nt/proto"
@@ -20,6 +21,7 @@ type server struct{}
 
 // SayHello implements helloworld.GreeterServer
 func (s *server) GetData(ctx context.Context, in *pb.DeviceStatus) (*pb.DeviceStatusResponse, error) {
+	fmt.Println("data: ", in)
 	return &pb.DeviceStatusResponse{Status: true, Time: time.Now().String()}, nil
 }
 
