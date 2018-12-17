@@ -50,8 +50,8 @@ func handleConnection(conn net.Conn) {
 	for {
 		ok := scanner.Scan()
 		time.Now().String()
-		fmt.Println("Time : ", time.Now().String(), "-------- Msg ", scanner.Text())
-		conn.Write([]byte(scanner.Text() + "\n"))
+		fmt.Println("Time : ", time.Now().Format(time.RFC3339), "-------- Msg ", scanner.Text())
+		conn.Write([]byte(scanner.Text() + "--- Time: " + time.Now().Format(time.RFC3339) + "\n"))
 		if !ok {
 			break
 		}
