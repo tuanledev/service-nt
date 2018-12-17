@@ -1,86 +1,23 @@
 package main
 
-import (
-	"bufio"
-	"flag"
-	"fmt"
-	"net"
-	"os"
-	"regexp"
-	"strconv"
-	"time"
-)
-
-var host = flag.String("host", "localhost", "The hostname or IP to connect to; defaults to \"localhost\".")
-var port = flag.Int("port", 50051, "The port to connect to; defaults to 8000.")
+import "net"
+import "fmt"
+import "bufio"
+import "os"
 
 func main() {
-	flag.Parse()
 
-	dest := *host + ":" + strconv.Itoa(*port)
-	fmt.Printf("Connecting to %s...\n", dest)
-
-	conn, err := net.Dial("tcp", dest)
-
-	if err != nil {
-		if _, t := err.(*net.OpError); t {
-			fmt.Println("Some problem connecting.")
-		} else {
-			fmt.Println("Unknown error: " + err.Error())
-		}
-		os.Exit(1)
-	}
-
-	go readConnection(conn)
-
+	// connect to this socket
+	conn, _ := net.Dial("tcp", "127.0.0.1:9000")
 	for {
+		// read in input from stdin
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("> ")
+		fmt.Print("Text to send: ")
 		text, _ := reader.ReadString('\n')
-
-		conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
-		_, err := conn.Write([]byte(text))
-		if err != nil {
-			fmt.Println("Error writing to stream.")
-			break
-		}
+		// send to socket
+		fmt.Fprintf(conn, text+"\n")
+		// listen for reply
+		message, _ := bufio.NewReader(conn).ReadString('\n')
+		fmt.Print("Message from server: " + message)
 	}
-}
-
-func readConnection(conn net.Conn) {
-	for {
-		scanner := bufio.NewScanner(conn)
-		for {
-			ok := scanner.Scan()
-			text := scanner.Text()
-
-			command := handleCommands(text)
-			if !command {
-				fmt.Printf("\b\b** %s\n> ", text)
-			}
-
-			if !ok {
-				fmt.Println("Reached EOF on server connection.")
-				break
-			}
-		}
-	}
-}
-
-func handleCommands(text string) bool {
-	r, err := regexp.Compile("^%.*%$")
-	if err == nil {
-		if r.MatchString(text) {
-
-			switch {
-			case text == "%quit%":
-				fmt.Println("\b\bServer is leaving. Hanging up.")
-				os.Exit(0)
-			}
-
-			return true
-		}
-	}
-
-	return false
 }
