@@ -15,6 +15,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 var addr = flag.String("addr", "", "The address to listen to; default is \"\" (all interfaces).")
@@ -28,7 +30,11 @@ func main() {
 	src := *addr + ":" + strconv.Itoa(*port)
 	listener, _ := net.Listen("tcp", src)
 	fmt.Printf("Listening on %s.\n", src)
-
+	fileLog, err := NewAndRead("logger.log", "./")
+	if err != nil {
+		logrus.Panicln("Error Create file log: ", err)
+	}
+	logrus.SetOutput(fileLog)
 	defer listener.Close()
 
 	for {
@@ -50,8 +56,11 @@ func handleConnection(conn net.Conn) {
 	for {
 		ok := scanner.Scan()
 		time.Now().String()
-		fmt.Println("Time : ", time.Now().UTC().String(), "-------- Msg ", scanner.Text())
-		conn.Write([]byte(scanner.Text() + "--- Time: " + time.Now().UTC().String() + "\n"))
+		if len(scanner.Text()) > 0 {
+			fmt.Println("Time : ", time.Now().UTC().String(), "-------- Msg ", scanner.Text())
+			logrus.Info("Time: ", time.Now().UTC().String(), " , Msg: ", scanner.Text())
+			conn.Write([]byte(scanner.Text() + "--- Time: " + time.Now().UTC().String() + "\n"))
+		}
 		if !ok {
 			break
 		}
@@ -79,4 +88,33 @@ func handleMessage(message string, conn net.Conn) {
 			conn.Write([]byte("Unrecognized command.\n"))
 		}
 	}
+}
+
+// FileExists reports whether the named file or directory exists.
+func FileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+// NewAndRead new and read file
+func NewAndRead(fileName string, path string) (*os.File, error) {
+	var (
+		err  error
+		fReq *os.File
+	)
+	if exist := FileExists(fmt.Sprintf("%s/%s", path, fileName)); exist == false {
+		if fReq, err = os.Create(path + fileName); err != nil {
+			return fReq, err
+		}
+	}
+	fReq, err = os.OpenFile(fmt.Sprintf("%s/%s", path, fileName), os.O_WRONLY|os.O_APPEND, 0777)
+	if err != nil {
+		return fReq, err
+	}
+
+	return fReq, err
 }
